@@ -1,0 +1,30 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# Eclipse / IntelliJ / VS Code metadata
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+.vscode/
+
+# Build outputs
+*.class
+*.log
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary / backup files
+*.swp
+*.swo
+*~
+!lib/LunarLander_Mutants.jar
