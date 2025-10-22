@@ -1,43 +1,81 @@
 package LunarLander;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.lang.reflect.Method;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import javafx.geometry.Dimension2D;
-import model0.*;
 
 public class TestLander {
-	@Test
-	public void testSomething() {
-		final GameModel model = GameFactory.createGame();
-		final Lander lander = model.getLander();
-		lander.setSize(new Dimension2D(2, 2));
-		Assertions.assertNotNull(lander);
+
+	// --- tiny reflection helpers ---
+	@SuppressWarnings("unchecked")
+	private static <T> T call(Object target, String name, Class<?>[] paramTypes, Object... args) {
+		try {
+			Method m = target.getClass().getMethod(name, paramTypes);
+			return (T) m.invoke(target, args);
+		} catch (ReflectiveOperationException e) {
+			throw new RuntimeException("Failed calling " + name + " on " + target.getClass(), e);
+		}
 	}
 
-	@Test
-	public void testThrustLevelLowerBound() {
-		final GameModel model = GameFactory.createGame();
-		model.getLander().setThrustLevel(-1);
-		int thrustlevel = model.getLander().getThrustLevel();
-		assertEquals(thrustlevel, 0);
+	private static Object lander(Object model) {
+		return call(model, "getLander", new Class<?>[] {});
 	}
 
-	@Test
-	public void testThrustLevelHigherBound() {
-		final GameModel model = GameFactory.createGame();
-		model.getLander().setThrustLevel(12);
-		int thrustlevel = model.getLander().getThrustLevel();
-		assertEquals(thrustlevel, 11);
+	private static int thrustLevel(Object lander) {
+		return call(lander, "getThrustLevel", new Class<?>[] {});
 	}
 
-	@Test
-	public void testTiltAngle() {
-		final GameModel model = GameFactory.createGame();
-		model.getLander().setTilt(45);
-		int tiltagle = model.getLander().getTiltAngle();
-		assertEquals(tiltagle, 45);
+	private static int tiltAngle(Object lander) {
+		return call(lander, "getTiltAngle", new Class<?>[] {});
+	}
+
+	private static void setThrust(Object lander, int v) {
+		call(lander, "setThrustLevel", new Class<?>[] { int.class }, v);
+	}
+
+	private static void setTilt(Object lander, double v) {
+		call(lander, "setTilt", new Class<?>[] { double.class }, v);
+	}
+
+	private static void setSize(Object lander, Dimension2D d) {
+		call(lander, "setSize", new Class<?>[] { Dimension2D.class }, d);
+	}
+	// --------------------------------
+
+	@ParameterizedTest(name = "{index} => {0}")
+	@MethodSource("LunarLander.GameModelProvider#allModels")
+	void testSomething(Object model) {
+		var l = lander(model);
+		setSize(l, new Dimension2D(2, 2));
+		assertNotNull(l);
+	}
+
+	@ParameterizedTest(name = "{index} => {0}")
+	@MethodSource("LunarLander.GameModelProvider#allModels")
+	void testThrustLevelLowerBound(Object model) {
+		var l = lander(model);
+		setThrust(l, -1);
+		assertEquals(0, thrustLevel(l));
+	}
+
+	@ParameterizedTest(name = "{index} => {0}")
+	@MethodSource("LunarLander.GameModelProvider#allModels")
+	void testThrustLevelHigherBound(Object model) {
+		var l = lander(model);
+		setThrust(l, 12);
+		assertEquals(11, thrustLevel(l));
+	}
+
+	@ParameterizedTest(name = "{index} => {0}")
+	@MethodSource("LunarLander.GameModelProvider#allModels")
+	void testTiltAngle(Object model) {
+		var l = lander(model);
+		setTilt(l, 45.0);
+		assertEquals(45.0, tiltAngle(l));
 	}
 }
