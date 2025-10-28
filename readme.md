@@ -39,3 +39,23 @@ mvn -Dtest=TestLander test
 
 
 mvn -DskipTests clean package
+
+
+## Test Results:
+
+```
+--- Fehlerstatistik pro Modell ---
+model3: 1 Fehler
+  - 4 fullThrust0to11 => model3
+model2: 1 Fehler
+  - 3 landingCrash tilted => model2
+model1: 8 Fehler
+  - 2 collNoContact => model1
+  - 2 yOutOfBoundLower => model1
+  - 2 yOutOfBoundUpper => model1
+  - 2 collNoContactTilted => model1
+  - 2 collTouchingCorner => model1
+  - 2 xOutOfBoundLower => model1
+  - 2 xOutOfBoundUpper => model1
+  - 2 collTouchingSide => model1
+```

@@ -50,9 +50,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
+        <version>3.1.2</version>
         <configuration>
-          <useModulePath>false</useModulePath>
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
+          <forkCount>0</forkCount>
+          <useSystemClassLoader>true</useSystemClassLoader>
+          <printSummary>true</printSummary>
+          <trimStackTrace>false</trimStackTrace>
         </configuration>
       </plugin>
     </plugins>

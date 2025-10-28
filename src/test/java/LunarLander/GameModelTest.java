@@ -1,138 +1,73 @@
 package LunarLander;
 
+import static LunarLander.GameModelAccess.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.lang.reflect.*;
 import java.util.*;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestWatcher;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
 // run tests with: mvn -DtrimStackTrace=false -Dsurefire.printSummary=true test
 
-public class TestLanderParameterized {
-
-    // ---------- tiny reflection helpers ----------
-
-    /**
-     * Ruft per Reflection eine öffentliche Methode auf und gibt das Ergebnis
-     * typisiert zurück.
-     */
+public class GameModelTest {
+    // --- Enum-Helfer: löst z. B. GameState.PAUSED/SHOW_SCORE/GAME_OVER auf ---
     @SuppressWarnings("unchecked")
-    private static <T> T call(Object target, String name, Class<?>[] paramTypes, Object... args) {
-        try {
-            Method m = target.getClass().getMethod(name, paramTypes);
-            return (T) m.invoke(target, args);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed calling " + name + " on " + target.getClass(), e);
-        }
-    }
-
-    /** Liefert das Lander-Objekt aus dem GameModel. */
-    private static Object lander(Object model) {
-        return call(model, "getLander", new Class<?>[] {});
-    }
-
-    /** Liefert den aktuellen Schub-Level des Landers. */
-    private static int thrustLevel(Object lander) {
-        return call(lander, "getThrustLevel", new Class<?>[] {});
-    }
-
-    /** Setzt den Schub-Level direkt. */
-    private static void setThrust(Object lander, int v) {
-        call(lander, "setThrustLevel", new Class<?>[] { int.class }, v);
-    }
-
-    /** Ändert den Schub-Level relativ (z. B. +1 oder -1). */
-    private static void changeThrust(Object model, int delta) {
-        call(model, "changeThrustLevel", new Class<?>[] { int.class }, delta);
-    }
-
-    /** Toggle für vollen Schub (0 ↔ 11 je nach Modell). */
-    private static void toggleFullThrust(Object model) {
-        call(model, "toggleFullThrust", new Class<?>[] {});
-    }
-
-    /** Setzt den Tilt (Grad). */
-    private static void setTilt(Object lander, double deg) {
-        call(lander, "setTilt", new Class<?>[] { double.class }, deg);
-    }
-
-    /** Setzt die Größe des Landers. */
-    private static void setSize(Object lander, Dimension2D d) {
-        call(lander, "setSize", new Class<?>[] { Dimension2D.class }, d);
-    }
-
-    /** Setzt die Position des Landers. */
-    private static void setPos(Object lander, Point2D p) {
-        call(lander, "setPos", new Class<?>[] { Point2D.class }, p);
-    }
-
-    /** Setzt die Geschwindigkeit des Landers. */
-    private static void setSpeed(Object lander, Point2D v) {
-        call(lander, "setSpeed", new Class<?>[] { Point2D.class }, v);
-    }
-
-    /** Liefert die aktuelle Beschleunigung des Landers. */
-    private static Point2D getAcceleration(Object lander) {
-        return call(lander, "getAcceleration", new Class<?>[] {});
-    }
-
-    /** Startet das Spiel. */
-    private static void startGame(Object model) {
-        call(model, "startGame", new Class<?>[] {});
-    }
-
-    /** Schaltet den Pause-Modus um. */
-    private static void togglePause(Object model) {
-        call(model, "togglePause", new Class<?>[] {});
-    }
-
-    /** Führt eine Model-Update-Schrittweite aus (dt in Ticks/Frames). */
-    private static void updateElements(Object model, double dt) {
-        call(model, "updateElements", new Class<?>[] { double.class }, dt);
-    }
-
-    /** Liefert den aktuellen Spielzustand (Enum-Instanz). */
-    private static Object getGameState(Object model) {
-        return call(model, "getGameState", new Class<?>[] {});
-    }
-
-    /** Liefert die Hindernisliste (Triangles) aus dem Modell. */
-    @SuppressWarnings("unchecked")
-    private static List<Object> getObstacles(Object model) {
-        return (List<Object>) call(model, "getObstacles", new Class<?>[] {});
-    }
-
-    /** Setzt die Hindernisliste (Triangles) im Modell. */
-    private static void setObstacles(Object model, ArrayList<Object> obs) {
-        call(model, "setObstacles", new Class<?>[] { ArrayList.class }, obs);
-    }
-
-    /** Liest ein statisches float-Feld (z. B. GAME_AREA_HEIGHT) per Reflection. */
-    private static float staticFloat(Object model, String fieldName) {
-        try {
-            Field f = model.getClass().getField(fieldName);
-            return f.getFloat(null);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to read static float " + fieldName, e);
-        }
-    }
-
-    /** Erzeugt ein Triangle-Objekt aus dem Paket des konkreten Modells. */
-    private static Object newTriangleForModel(Object model, Point2D a, Point2D b, Point2D c) {
+    private static Object enumConstant(Object model, String enumSimpleName, String constant) {
         try {
             String pkg = model.getClass().getPackageName();
-            Class<?> tri = Class.forName(pkg + ".Triangle");
-            Constructor<?> ctor = tri.getConstructor(Point2D.class, Point2D.class, Point2D.class);
-            return ctor.newInstance(a, b, c);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to construct Triangle for " + model.getClass(), e);
+            Class<?> enumClass = Class.forName(pkg + "." + enumSimpleName);
+            return Enum.valueOf((Class<Enum>) enumClass.asSubclass(Enum.class), constant);
+        } catch (ClassNotFoundException e) {
+            try {
+                Class<?> enumClass = Class.forName(model.getClass().getName() + "$" + enumSimpleName);
+                return Enum.valueOf((Class<Enum>) enumClass.asSubclass(Enum.class), constant);
+            } catch (Exception ex) {
+                throw new RuntimeException("Cannot resolve enum " + enumSimpleName + "." + constant, ex);
+            }
         }
     }
-    // ---------------------------------------------
+
+    /** 
+     *      Statistik über fehlgeschlagene Tests pro Modell
+     */ 
+     
+    private static Map<String, List<String>> failedTests = new HashMap<>();
+
+    @RegisterExtension
+    static TestWatcher watcher = new TestWatcher() {
+        @Override
+        public void testFailed(ExtensionContext context, Throwable cause) {
+            String testName = context.getDisplayName();
+            // Extrahiere den Modellnamen aus dem Testnamen (alles nach "=> ")
+            String modelName = "unknown";
+            int idx = testName.lastIndexOf("=>");
+            if (idx != -1) {
+                modelName = testName.substring(idx + 2).trim();
+            }
+            failedTests.computeIfAbsent(modelName, k -> new ArrayList<>()).add(testName);
+        }
+    };
+
+    @AfterAll
+    static void printStatistics() {
+        System.out.println("\n--- Fehlerstatistik pro Modell ---");
+        failedTests.forEach((modelName, tests) -> {
+            System.out.println(modelName + ": " + tests.size() + " Fehler");
+            tests.forEach(test -> System.out.println("  - " + test));
+        });
+    }
+
 
     /** Basis: Lander existiert und Größe kann gesetzt werden. */
     @ParameterizedTest(name = "{index} => {0}")
@@ -142,6 +77,12 @@ public class TestLanderParameterized {
         setSize(l, new Dimension2D(2, 2));
         assertNotNull(l);
     }
+
+    /**
+     *      Aufgabe 1 a)
+     * 
+     *      Schubkontrolle Stufenweise
+     */
 
     /**
      * Untere Schub-Grenze über changeThrustLevel darf nicht unterschritten werden.
@@ -279,6 +220,12 @@ public class TestLanderParameterized {
         updateElements(model, 1);
         assertEquals(new Point2D(0, 0), getAcceleration(l));
     }
+
+    /**
+     *      Aufgabe 1 b)
+     * 
+     *      Kollision mit Hindernissen
+     */
 
     /** Beim Erzeugen des Spiels gibt es 10 Hindernisse. */
     @ParameterizedTest(name = "{index} obstacleCount => {0}")
@@ -643,22 +590,5 @@ public class TestLanderParameterized {
         startGame(model);
         updateElements(model, 0);
         assertEquals(enumConstant(model, "GameState", "GAME_OVER"), getGameState(model));
-    }
-
-    // --- Enum-Helfer: löst z. B. GameState.PAUSED/SHOW_SCORE/GAME_OVER auf ---
-    @SuppressWarnings("unchecked")
-    private static Object enumConstant(Object model, String enumSimpleName, String constant) {
-        try {
-            String pkg = model.getClass().getPackageName();
-            Class<?> enumClass = Class.forName(pkg + "." + enumSimpleName);
-            return Enum.valueOf((Class<Enum>) enumClass.asSubclass(Enum.class), constant);
-        } catch (ClassNotFoundException e) {
-            try {
-                Class<?> enumClass = Class.forName(model.getClass().getName() + "$" + enumSimpleName);
-                return Enum.valueOf((Class<Enum>) enumClass.asSubclass(Enum.class), constant);
-            } catch (Exception ex) {
-                throw new RuntimeException("Cannot resolve enum " + enumSimpleName + "." + constant, ex);
-            }
-        }
     }
 }
