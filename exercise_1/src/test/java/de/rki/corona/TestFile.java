@@ -46,6 +46,7 @@ class CoronaAppTest {
         }
     }
 
+    // Nested JUnit Class for NoContact
     @Nested
     class NoContact {
         @Test
@@ -56,6 +57,7 @@ class CoronaAppTest {
         }
     }
 
+    // Nested JUnit Class for UninfectedOnly
     @Nested
     class UninfectedOnly {
         @Test
@@ -73,6 +75,7 @@ class CoronaAppTest {
         }
     }
 
+    // Nested JUnit Class for InfectedOnly
     @Nested
     class InfectedOnly {
         @Test
@@ -90,6 +93,7 @@ class CoronaAppTest {
         }
     }
 
+    // Nested JUnit Class for Mixed
     @Nested
     class Mixed {
         @Test
@@ -97,7 +101,6 @@ class CoronaAppTest {
             when(database.isInfected("H_SAFE")).thenReturn(false);
             when(database.isInfected("H_INFECTED")).thenReturn(true);
 
-            // beide kurz: jeweils 1s
             tickTwice("H_SAFE", 0L, 1000L);
             tickTwice("H_INFECTED", 2000L, 3000L); // SAFE_CONTACT
             Assertions.assertEquals(CoronaApp.Severity.SAFE_CONTACT, app.getSeverity());
