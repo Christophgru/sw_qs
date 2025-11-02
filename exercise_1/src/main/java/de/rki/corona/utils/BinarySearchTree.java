@@ -35,18 +35,24 @@ public class BinarySearchTree<T extends Comparable<T>> {
         root = removeRecursive(root, value);
         return value;
     }
+    
+
     private Node<T> removeRecursive(Node<T> current, T value) {
         if (current == null) {
             return null;
         }
-        if (value.compareTo(current.value) == 0) {
-            // Node to delete found
+
+        int cmp = value.compareTo(current.value);
+
+        if (cmp == 0) {
+            // If there are duplicates, just decrement and keep the node
+            if (current.getCount() > 1) {
+                current.decrementCount();
+                return current;
+            }
+
+            // Now handle structural removal for a single remaining instance
             if (current.left == null && current.right == null) {
-                if(current.getCount() > 1){
-                    //more than one instance, decrement count
-                    current.decrementCount();
-                    return current;
-                }
                 return null; // No children
             }
             if (current.right == null) {
@@ -55,21 +61,26 @@ public class BinarySearchTree<T extends Comparable<T>> {
             if (current.left == null) {
                 return current.right; // One child
             }
-            // Two children
+
+            // Two children: swap with inorder successor and remove one occurrence there
             T smallestValue = findSmallestValue(current.right);
             current.value = smallestValue;
+            // Remove exactly one occurrence of the successor value from the right subtree
             current.right = removeRecursive(current.right, smallestValue);
             return current;
         }
-        if (value.compareTo(current.value) < 0) {
+
+        if (cmp < 0) {
             current.left = removeRecursive(current.left, value);
-            return current;
+        } else {
+            current.right = removeRecursive(current.right, value);
         }
-        current.right = removeRecursive(current.right, value);
         return current;
     }
-    private T findSmallestValue(Node<T> right) {
-        return right.left == null ? right.value : findSmallestValue(right.left);
+
+
+    private T findSmallestValue(Node<T> current) {
+        return current.left == null ? current.value : findSmallestValue(current.left);
     }
     // Converts the tree into a list
     public java.util.List<T> toList() {
@@ -94,7 +105,7 @@ public class BinarySearchTree<T extends Comparable<T>> {
         if (current == null) {
             return 0;
         }
-        int count = (current.value.equals(value)) ? 1*current.getCount() : 0;
+        int count = (current.value.equals(value)) ? current.getCount() : 0;
         count += countRecursive(current.left, value);
         count += countRecursive(current.right, value);
         return count;
