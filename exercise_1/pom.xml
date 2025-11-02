@@ -13,16 +13,43 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <junit.jupiter.version>5.11.3</junit.jupiter.version>
     <surefire.version>3.5.0</surefire.version>
+    <mockito.version>5.13.0</mockito.version>
   </properties>
 
   <dependencies>
-    <!-- JUnit 5 -->
+    <!-- JUnit 5 (API + Engine + Params) -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Mockito Core: ermöglicht import static org.mockito.Mockito.*; -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- OPTIONAL: JUnit-5-Erweiterung für @ExtendWith(MockitoExtension.class) -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- OPTIONAL: wenn du finale Klassen/Methoden oder statische Methoden mocken willst -->
+    <!--
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    -->
   </dependencies>
 
   <build>
@@ -37,7 +64,7 @@
         </configuration>
       </plugin>
 
-      <!-- JUnit 5 -->
+      <!-- Surefire: JUnit 5 aktivieren -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
