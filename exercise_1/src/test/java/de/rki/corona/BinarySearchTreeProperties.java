@@ -25,6 +25,23 @@ import net.jqwik.api.constraints.Size;
 
 class BinarySearchTreeProperties {
 
+
+    @Example
+    void reproduces_example_sequence() {
+        BinarySearchTree<Integer> bst = new BinarySearchTree<>();
+        bst.add(5);
+        bst.add(3);
+        bst.add(7);
+        bst.remove(3);
+        Assertions.assertEquals(1, bst.count(5));
+        int sum = bst.sum();
+        List<Integer> list = bst.toList();
+
+        // Expected: only 5 and 7 remain, in order
+        Assertions.assertEquals(Arrays.asList(5, 7), list);
+        Assertions.assertEquals(12, sum);
+    }
+
     /* ====== Arbitraries / Generators ====== */
 
     @Provide
@@ -202,21 +219,6 @@ class BinarySearchTreeProperties {
                 () -> "Sum mismatch after ops: " + trace);
     }
 
-    /* ====== Regression-style property for your example main() ====== */
 
-    @Example
-    void reproduces_example_sequence() {
-        BinarySearchTree<Integer> bst = new BinarySearchTree<>();
-        bst.add(5);
-        bst.add(3);
-        bst.add(7);
-        bst.remove(3);
-        Assertions.assertEquals(1, bst.count(5));
-        int sum = bst.sum();
-        List<Integer> list = bst.toList();
 
-        // Expected: only 5 and 7 remain, in order
-        Assertions.assertEquals(Arrays.asList(5, 7), list);
-        Assertions.assertEquals(12, sum);
-    }
 }

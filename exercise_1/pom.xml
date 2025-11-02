@@ -79,6 +79,11 @@
         <version>${surefire.version}</version>
         <configuration>
           <useModulePath>false</useModulePath>
+          <includes>
+            <include>**/*Test*.java</include>
+            <include>**/*Tests*.java</include>
+            <include>**/*Properties.java</include>   <!-- Add this -->
+          </includes>
         </configuration>
       </plugin>
     </plugins>
