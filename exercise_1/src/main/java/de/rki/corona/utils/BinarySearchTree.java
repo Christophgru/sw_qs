@@ -31,9 +31,8 @@ public class BinarySearchTree<T extends Comparable<T>> {
         return current;
     }
     // Removes a value from the tree
-    public T remove(T value) {
+    public void remove(T value) {
         root = removeRecursive(root, value);
-        return value;
     }
     
 

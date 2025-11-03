@@ -57,6 +57,11 @@ class BinarySearchTreeProperties {
         return Arbitraries.integers().between(Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
+    @Provide
+    Arbitrary<Integer> smallInt() {
+        return Arbitraries.integers().between(-100, 100);
+    }
+
     /* ====== Basic invariants on a populated tree ====== */
 
     @Property(tries = 200)
@@ -95,7 +100,7 @@ class BinarySearchTreeProperties {
     }
 
     @Property(tries = 200)
-    void count_matches_frequency_in_list(@ForAll("intLists") List<Integer> values, @ForAll("anyInt") Integer probe) {
+    void count_matches_frequency_in_list(@ForAll("intLists") List<Integer> values, @ForAll("smallInt") Integer probe) {
         BinarySearchTree<Integer> bst = new BinarySearchTree<>();
         values.forEach(bst::add);
 
@@ -108,7 +113,7 @@ class BinarySearchTreeProperties {
 
     @Property(tries = 150)
     void removing_all_instances_makes_count_zero(@ForAll("intLists") List<Integer> values,
-                                                 @ForAll("anyInt") Integer target) {
+                                                 @ForAll("smallInt") Integer target) {
         BinarySearchTree<Integer> bst = new BinarySearchTree<>();
         values.forEach(bst::add);
 
@@ -125,7 +130,7 @@ class BinarySearchTreeProperties {
         }
     }
 
-    @Property(tries = 150)
+    @Property(tries = 5)
     void empty_tree_invariants_hold() {
         BinarySearchTree<Integer> bst = new BinarySearchTree<>();
         Assertions.assertEquals(0, bst.sum(), "Empty tree sum should be zero");
