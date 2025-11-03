@@ -28,3 +28,4 @@ Thumbs.db
 *.swo
 *~
 !lib/LunarLander_Mutants.jar
+.jqwik-database

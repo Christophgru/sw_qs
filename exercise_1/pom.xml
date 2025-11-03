@@ -50,7 +50,15 @@
       <scope>test</scope>
     </dependency>
     -->
+    <dependency>
+      <groupId>net.jqwik</groupId>
+      <artifactId>jqwik</artifactId>
+      <version>1.8.0</version> <!-- or latest 1.x -->
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+
+  
 
   <build>
     <plugins>
@@ -71,6 +79,11 @@
         <version>${surefire.version}</version>
         <configuration>
           <useModulePath>false</useModulePath>
+          <includes>
+            <include>**/*Test*.java</include>
+            <include>**/*Tests*.java</include>
+            <include>**/*Properties.java</include>   <!-- Add this -->
+          </includes>
         </configuration>
       </plugin>
     </plugins>
