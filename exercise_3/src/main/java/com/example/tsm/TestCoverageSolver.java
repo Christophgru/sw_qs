@@ -1,11 +1,6 @@
 package com.example.tsm;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,56 +40,6 @@ public class TestCoverageSolver {
         public String toString() {
             return "TestInfo{name='" + name + "', coveredLines=" + coveredLines + '}';
         }
-    }
-
-    /**
-     * Parse a file of the form:
-     * testName1
-     * 45
-     * 50
-     * 72
-     * testName2
-     * 10
-     * 11
-     * ...
-     */
-    public static List<TestInfo> readTestsFromFile(Path path) throws IOException {
-        List<TestInfo> tests = new ArrayList<>();
-
-        try (BufferedReader br = Files.newBufferedReader(path)) {
-            String line;
-            String currentTestName = null;
-            Set<Integer> currentLines = new HashSet<>();
-
-            while ((line = br.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty()) {
-                    continue; // skip blank lines
-                }
-
-                if (line.matches("\\d+")) {
-                    // This line is a line number
-                    if (currentTestName == null) {
-                        throw new IOException("Found line number before any test name: " + line);
-                    }
-                    currentLines.add(Integer.parseInt(line));
-                } else {
-                    // This line is a new test name
-                    if (currentTestName != null) {
-                        tests.add(new TestInfo(currentTestName, new HashSet<>(currentLines)));
-                        currentLines.clear();
-                    }
-                    currentTestName = line;
-                }
-            }
-
-            // Add last test if file didn't end with a blank line
-            if (currentTestName != null) {
-                tests.add(new TestInfo(currentTestName, currentLines));
-            }
-        }
-
-        return tests;
     }
 
     /**
@@ -153,65 +98,16 @@ public class TestCoverageSolver {
         return chosen;
     }
 
-    /**
-     * Example of manually filling the classes with data (if no file is provided).
-     */
-    public static List<TestInfo> createSampleData() {
-        List<TestInfo> tests = new ArrayList<>();
+    List<TestInfo> solve(List<TestInfo> tests, Algo algo) {
+        List<TestInfo> smallestSet = new ArrayList<>();
 
-        // Example corresponding to your sample data
-        tests.add(new TestInfo("removeFirstLast",
-                new HashSet<>(Arrays.asList(45, 50, 72, 77, 78))));
-        tests.add(new TestInfo("test_add",
-                new HashSet<>(Arrays.asList(52, 50, 72, 77, 78))));
-
-        // Add some extra sample tests if you want
-        tests.add(new TestInfo("test_subtract",
-                new HashSet<>(Arrays.asList(10, 11, 45))));
-        tests.add(new TestInfo("test_multiply",
-                new HashSet<>(Arrays.asList(11, 52, 79))));
-
-        return tests;
-    }
-
-    void solve(Path path, Algo algo) {
-        try {
-            List<TestInfo> tests;
-
-            tests = readTestsFromFile(path);
-            System.out.println("Loaded tests from file: " + path.toAbsolutePath());
-            if (path.toFile().length() == 0) {
-                // No file provided → use hard-coded sample data
-                tests = createSampleData();
-                System.out.println("Using hard-coded sample tests.");
-            }
-
-            System.out.println("All tests:");
-            for (TestInfo t : tests) {
-                System.out.println("  " + t);
-            }
-
-            Set<Integer> allLines = computeAllLines(tests);
-            System.out.println(
-                    "\nAll lines that need to be covered: " + allLines + " (total " + allLines.size() + " lines)");
-            List<TestInfo> smallestSet = new ArrayList<>();
-            if (algo == Algo.Greedy) {
-                smallestSet = greedySetCover(tests);
-            } else if (algo == Algo.Pruning) {
-                // implement other algos here
-                smallestSet = prune(tests); // placeholder
-            }
-
-            System.out.println("\nSelected tests (greedy smallest set):");
-            for (TestInfo t : smallestSet) {
-                System.out.println("  " + t.getName() + " covers " + t.getCoveredLines());
-            }
-            System.out.println("\nNumber of selected tests: " + smallestSet.size() +
-                    " covering all " + computeAllLines(smallestSet).size() + " lines.");
-
-        } catch (IOException e) {
-            System.err.println("Error: " + e.getMessage());
+        if (algo == Algo.Greedy) {
+            smallestSet = greedySetCover(tests);
+        } else if (algo == Algo.Pruning) {
+            // implement other algos here
+            smallestSet = prune(tests); // placeholder
         }
+        return smallestSet;
     }
 
     List<TestInfo> prune(List<TestInfo> tests) {
